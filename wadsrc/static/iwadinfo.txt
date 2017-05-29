@@ -377,6 +377,18 @@ IWad
 	Load = "nerve.wad"
 }
 
+IWad
+{
+	Name = "Spooky House of Jump Scare"
+	Game = "Doom"
+	Config = "Doom"
+	Mapinfo = "mapinfo/doom2.txt"
+	Compatibility = "Shorttex"
+	MustContain = "SPOOK"
+	Load = "Spooky.pk3"
+	BannerColors = "a8 00 00", "a8 a8 a8"
+}
+
 // Doom 2 must be last to be checked becaude MAP01 is its only requirement
 IWad
 {
@@ -391,9 +403,9 @@ IWad
 }
 	
 
-
 Names
 {	
+	"Spooky.wad"
 	"doom_complete.pk3"
 	"doom2.wad"
 	"plutonia.wad"

@@ -103,33 +103,28 @@ vec4 getTexel(vec2 st)
 //===========================================================================
 float R_DoomLightingEquation(float light)
 {
-	// Calculated from r_visibility. It differs between walls, floor and sprites.
-	//
-	// Wall: globVis = r_WallVisibility
-	// Floor: r_FloorVisibility / abs(plane.Zat0 - ViewPos.Z)
-	// Sprite: same as wall
-	// All are calculated in R_SetVisibility and seem to be decided by the
-	// aspect ratio amongst other things.
-	//
-	// 1706 is the value for walls on 1080p 16:9 displays.
-	float globVis = 1706.0;
+	float TotalLight = light * 255.0;
 
-	/* L is the integer light level used in the game */
-	float L = light * 255.0;
-
-	/* z is the depth in view/eye space, positive going into the screen */
-	float z = pixelpos.w;
-
-	/* The zdoom light equation */
-	float vis = globVis / z;
-	float shade = 64.0 - (L + 12.0) * 32.0/128.0;
-	float lightscale;
-	if (uPalLightLevels != 0)
-		lightscale = clamp(float(int(shade - min(24.0, vis))) / 32.0, 0.0, 31.0/32.0);
-	else
-		lightscale = clamp((shade - min(24.0, vis)) / 32.0, 0.0, 31.0/32.0);
-
-	// Result is the normalized colormap index (0 bright .. 1 dark)
+	//Spooky house Light Equation
+	float lightscale = 1.0;
+	//light/33 should be 4 whe light is 130
+	float MaxFullLightDist = (TotalLight/33) * TotalLight;
+	float tmp=0;
+	if(TotalLight > 0){//sector light is zero so there'll be no light
+		if(TotalLight == 255){ //if the sector is full light, it'll always be full light
+			lightscale = 0;
+		}
+		else{
+			tmp = min(pixelpos.w / 10.0, 64.0 + MaxFullLightDist + (TotalLight/10));
+			tmp = (tmp / (64.0 + MaxFullLightDist  + (TotalLight/10) ) )* 10 ;
+			lightscale = clamp(tmp, 0 ,1.0);
+		}
+		else{			
+			tmp = min(pixelpos.w / 10.0, 64.0 + MaxFullLightDist + (TotalLight/10));
+			tmp = (tmp / (64.0 + MaxFullLightDist  + (TotalLight/10) ) )* 10 ;
+			lightscale = clamp(tmp, 0 ,1.0);
+		}
+	}
 	return lightscale;
 }
 
