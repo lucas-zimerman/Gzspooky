@@ -277,7 +277,7 @@ FStartupScreen *FStartupScreen::CreateInstance(int max_progress)
 
 	if (!Args->CheckParm("-nostartup"))
 	{
-		if (DoomStartupInfo.Type == FStartupInfo::HexenStartup ||
+		if (DoomStartupInfo.Type == FStartupInfo::HexenStartup || FStartupInfo::DoomStartup ||
 			(gameinfo.gametype == GAME_Hexen && DoomStartupInfo.Type == FStartupInfo::DefaultStartup))
 		{
 			scr = new FHexenStartupScreen(max_progress, hr);
