@@ -89,6 +89,7 @@
 #include "stats.h"
 #include "types.h"
 #include "vm.h"
+#include "a_SpookyMenu.h"
 
 	// P-codes for ACS scripts
 	enum
@@ -4965,8 +4966,12 @@ enum EACSFunctions
 	ACSF_Ceil,
 	ACSF_ScriptCall,
 	ACSF_StartSlideshow,
-
-		// Eternity's
+	ACSF_GetMenu,
+	ACSF_SetMenu,
+	ACSF_GetMenuRequestOpen,
+	ACSF_SetSpookyMenuLock,
+	
+	// Eternity's
 	ACSF_GetLineX = 300,
 	ACSF_GetLineY,
 
@@ -5916,7 +5921,19 @@ int DLevelScript::CallFunction(int argCount, int funcIndex, int32_t *args)
 
 		case ACSF_SpawnForced:
 			return DoSpawn(args[0], args[1], args[2], args[3], args[4], args[5], true);
-
+		//IBM5155
+		case ACSF_GetMenu:
+			return GetSpookyMenu();
+			break;
+		case ACSF_SetMenu:
+			return SetSpookyMenu(args[0]);
+			break;
+		case ACSF_GetMenuRequestOpen:
+			return GetSpookyMenuOpenRequest();
+			break;
+		case ACSF_SetSpookyMenuLock:
+			SetSpookyMenuLock(args[0]);
+			break;
 		case ACSF_ACS_NamedExecute:
 		case ACSF_ACS_NamedSuspend:
 		case ACSF_ACS_NamedTerminate:

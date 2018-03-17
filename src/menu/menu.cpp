@@ -57,6 +57,7 @@
 #include "textures/textures.h"
 #include "vm.h"
 #include "events.h"
+#include "a_SpookyMenu.h"
 
 //
 // Todo: Move these elsewhere
@@ -310,28 +311,30 @@ bool DMenu::TranslateKeyboardEvents()
 
 void M_StartControlPanel (bool makeSound)
 {
-	// intro might call this repeatedly
-	if (CurrentMenu != nullptr)
-		return;
+	if (GetSpookyMenuLock() == false) {
+		// intro might call this repeatedly
+		if (CurrentMenu != nullptr)
+			return;
 
-	ResetButtonStates ();
-	for (int i = 0; i < NUM_MKEYS; ++i)
-	{
-		MenuButtons[i].ReleaseKey(0);
+		ResetButtonStates();
+		for (int i = 0; i < NUM_MKEYS; ++i)
+		{
+			MenuButtons[i].ReleaseKey(0);
+		}
+
+		C_HideConsole();				// [RH] Make sure console goes bye bye.
+		menuactive = MENU_Off;//menuactive = MENU_On;
+		// Pause sound effects before we play the menu switch sound.
+		// That way, it won't be paused.
+		P_CheckTickerPaused();
+
+		if (makeSound)
+		{
+			S_Sound(CHAN_VOICE | CHAN_UI, "menu/activate", snd_menuvolume, ATTN_NONE);
+		}
+		BackbuttonTime = 0;
+		BackbuttonAlpha = 0;
 	}
-
-	C_HideConsole ();				// [RH] Make sure console goes bye bye.
-	menuactive = MENU_On;
-	// Pause sound effects before we play the menu switch sound.
-	// That way, it won't be paused.
-	P_CheckTickerPaused ();
-
-	if (makeSound)
-	{
-		S_Sound (CHAN_VOICE | CHAN_UI, "menu/activate", snd_menuvolume, ATTN_NONE);
-	}
-	BackbuttonTime = 0;
-	BackbuttonAlpha = 0;
 }
 
 //=============================================================================
@@ -364,7 +367,7 @@ DEFINE_ACTION_FUNCTION(DMenu, ActivateMenu)
 //
 //
 //=============================================================================
-
+int test2 = 0;
 void M_SetMenu(FName menu, int param)
 {
 	// some menus need some special treatment
@@ -467,14 +470,19 @@ void M_SetMenu(FName menu, int param)
 				PClass *cls = ld->mClass;
 				if (cls == nullptr) cls = DefaultListMenuClass;
 				if (cls == nullptr) cls = PClass::FindClass("ListMenu");
-
-				DMenu *newmenu = (DMenu *)cls->CreateNew();
-				IFVIRTUALPTRNAME(newmenu, "ListMenu", Init)
-				{
-					VMValue params[3] = { newmenu, CurrentMenu, ld };
-					VMCall(func, params, 3, nullptr, 0);
+				//IBM5155 only allow to view the menu in case you are allowed to
+				if (GetSpookyMenuLock() == false) {
+					DMenu *newmenu = (DMenu *)cls->CreateNew();
+					IFVIRTUALPTRNAME(newmenu, "ListMenu", Init)
+					{
+						VMValue params[3] = { newmenu, CurrentMenu, ld };
+						VMCall(func, params, 3, nullptr, 0);
+					}
+					M_ActivateMenu(newmenu);
 				}
-				M_ActivateMenu(newmenu);
+				else {
+					TriggerSpookyMenuOpenRequest();
+				}
 			}
 		}
 		else if ((*desc)->IsKindOf(RUNTIME_CLASS(DOptionMenuDescriptor)))
@@ -530,7 +538,7 @@ DEFINE_ACTION_FUNCTION(DMenu, SetMenu)
 //
 //
 //=============================================================================
-
+int test = 0;
 bool M_Responder (event_t *ev) 
 { 
 	int ch = 0;

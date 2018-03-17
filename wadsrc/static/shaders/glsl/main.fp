@@ -97,7 +97,7 @@ vec4 getTexel(vec2 st)
 }
 
 //===========================================================================
-//
+// Spooky House of Jumpscare Light Equation, created by:IBM5155
 // Doom lighting equation exactly as calculated by zdoom.
 //
 //===========================================================================
@@ -118,7 +118,7 @@ float R_DoomLightingEquation(float light)
 			tmp = min(pixelpos.w / 10.0, 64.0 + MaxFullLightDist + (TotalLight/10));
 			tmp = (tmp / (64.0 + MaxFullLightDist  + (TotalLight/10) ) )* 10 ;
 //			tmp = int(tmp);
-			lightscale = clamp(tmp, 0 ,1.0);
+			lightscale = clamp(tmp, 0.0 ,1.0);
 
 //			lightscale = 0;
 		}
@@ -126,13 +126,14 @@ float R_DoomLightingEquation(float light)
 			tmp = min(pixelpos.w / 10.0, 64.0 + MaxFullLightDist + (TotalLight/10));
 			tmp = (tmp / (64.0 + MaxFullLightDist  + (TotalLight/10) ) )* 10 ;
 //			tmp = int(tmp);
-			lightscale = clamp(tmp, 0 ,1.0);
+			lightscale = clamp(tmp, 0.0 ,1.0);
 		}
 
 	//	lightscale = clamp((  min(pixelpos.w  * L , 76500.0)) / 76500.0, 0.0, 1.0);
 	}
 	return lightscale;
 }
+
 
 //===========================================================================
 //
@@ -315,7 +316,7 @@ vec4 getLightColor(float fogdist, float fogfactor)
 				vec4 lightpos = lights[i];
 				vec4 lightcolor = lights[i+1];
 				
-				lightcolor.rgb *= max(lightpos.w - distance(pixelpos.xyz, lightpos.xyz),0.0) / lightpos.w;
+				lightcolor.rgb *= pointLightAttenuation(lightpos, lightcolor.a);
 				dynlight.rgb += lightcolor.rgb;
 			}
 			//
@@ -326,7 +327,7 @@ vec4 getLightColor(float fogdist, float fogfactor)
 				vec4 lightpos = lights[i];
 				vec4 lightcolor = lights[i+1];
 				
-				lightcolor.rgb *= max(lightpos.w - distance(pixelpos.xyz, lightpos.xyz),0.0) / lightpos.w;
+				lightcolor.rgb *= pointLightAttenuation(lightpos, lightcolor.a);
 				dynlight.rgb -= lightcolor.rgb;
 			}
 		}
@@ -337,7 +338,6 @@ vec4 getLightColor(float fogdist, float fogfactor)
 	// prevent any unintentional messing around with the alpha.
 	return vec4(color.rgb, vColor.a);
 }
-
 
 //===========================================================================
 //
@@ -435,7 +435,7 @@ void main()
 						vec4 lightpos = lights[i];
 						vec4 lightcolor = lights[i+1];
 						
-						lightcolor.rgb *= max(lightpos.w - distance(pixelpos.xyz, lightpos.xyz),0.0) / lightpos.w;
+						lightcolor.rgb *= pointLightAttenuation(lightpos, lightcolor.a);
 						addlight.rgb += lightcolor.rgb;
 					}
 					frag.rgb = clamp(frag.rgb + desaturate(addlight).rgb, 0.0, 1.0);
@@ -491,5 +491,9 @@ void main()
 		}
 	}
 	FragColor = frag;
+#ifdef GBUFFER_PASS
+	FragFog = vec4(AmbientOcclusionColor(), 1.0);
+	FragNormal = vec4(vEyeNormal.xyz * 0.5 + 0.5, 1.0);
+#endif
 }
 

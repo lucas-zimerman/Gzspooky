@@ -1091,7 +1091,7 @@ void ST_Endoom()
 
 	if (gameinfo.Endoom.Len() == 0) 
 	{
-		exit(0);
+		exit(1);
 	}
 
 	int endoom_lump = Wads.CheckNumForFullName (gameinfo.Endoom, true);
